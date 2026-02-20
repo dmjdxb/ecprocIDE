@@ -224,3 +224,41 @@ describe('generateIR', () => {
     expect(irStep.current_A).toBeCloseTo(0.05);
   });
 });
+
+// === cleanParamKey regression tests ===
+
+describe('YAML/Python param key cleaning', () => {
+  it('YAML: EIS has f_start and f_end, not duplicate f', () => {
+    const steps = [createDefaultStep('eis')];
+    const yaml = generateYAML(defaultMeta, steps);
+    expect(yaml).toContain('f_start:');
+    expect(yaml).toContain('f_end:');
+  });
+
+  it('YAML: CV has scan_rate, not scan', () => {
+    const steps = [createDefaultStep('cv')];
+    const yaml = generateYAML(defaultMeta, steps);
+    expect(yaml).toContain('scan_rate:');
+  });
+
+  it('YAML: purge has flow_rate and duration', () => {
+    const steps = [createDefaultStep('purge')];
+    const yaml = generateYAML(defaultMeta, steps);
+    expect(yaml).toContain('flow_rate:');
+    expect(yaml).toContain('duration:');
+  });
+
+  it('Python: EIS has f_start= and f_end=, no duplicate f=', () => {
+    const steps = [createDefaultStep('eis')];
+    const py = generatePython(defaultMeta, steps);
+    expect(py).toContain('f_start=');
+    expect(py).toContain('f_end=');
+    expect(py).not.toMatch(/\bf=\d/);
+  });
+
+  it('Python: CV has scan_rate=, not scan=', () => {
+    const steps = [createDefaultStep('cv')];
+    const py = generatePython(defaultMeta, steps);
+    expect(py).toContain('scan_rate=');
+  });
+});

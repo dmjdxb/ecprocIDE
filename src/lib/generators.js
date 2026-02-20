@@ -8,6 +8,11 @@
 
 import { TECHNIQUES } from './techniques';
 
+// Strip only known unit suffixes from param keys (longest first to avoid partial matches)
+function cleanParamKey(key) {
+  return key.replace(/_(mV_s|mL_min|mV_min|mV|ms|mA|Hz|min|V|s|C)$/, '');
+}
+
 /**
  * Generate .ecproc YAML format
  */
@@ -57,7 +62,7 @@ export function generateYAML(metadata, steps) {
     Object.entries(step.params).forEach(([key, value]) => {
       if (value !== null && value !== '' && value !== undefined) {
         const paramDef = tech.params[key];
-        const cleanKey = key.replace(/_[A-Za-z_]+$/, ''); // Remove unit suffix
+        const cleanKey = cleanParamKey(key);
         const unit = paramDef?.unit && !key.includes('_') ? ` ${paramDef.unit}` : '';
         
         if (typeof value === 'boolean') {
@@ -132,7 +137,7 @@ export function generatePython(metadata, steps) {
     const paramPairs = [];
     Object.entries(step.params).forEach(([key, value]) => {
       if (value !== null && value !== '' && value !== undefined) {
-        const cleanKey = key.replace(/_[A-Za-z_]+$/, ''); // Remove unit suffix
+        const cleanKey = cleanParamKey(key);
         if (typeof value === 'boolean') {
           paramPairs.push(`${cleanKey}=${value ? 'True' : 'False'}`);
         } else if (typeof value === 'string' && isNaN(value)) {
