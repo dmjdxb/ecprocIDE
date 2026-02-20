@@ -319,9 +319,19 @@ const CodeOutput = ({ format, metadata, steps }) => {
     URL.revokeObjectURL(url);
   };
 
+  const downloadHints = {
+    yaml: 'Open with any text editor (VS Code, TextEdit, Notepad)',
+    python: 'Requires ecproc SDK: pip install ecproc',
+    ecdl: null,
+    ir: null,
+  };
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <div className="flex items-center justify-end gap-2 px-3 py-2 border-b border-slate-700">
+        {downloadHints[format] && (
+          <span className="text-xs text-slate-500 mr-auto pl-1">{downloadHints[format]}</span>
+        )}
         <button
           onClick={copyToClipboard}
           className="flex items-center gap-1 px-2 py-1 text-xs text-slate-400 hover:text-slate-200"

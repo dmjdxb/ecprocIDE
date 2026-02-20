@@ -142,9 +142,10 @@ describe('generatePython', () => {
     expect(output).toContain('p.eis(');
   });
 
-  it('has proper Python syntax (triple-quote docstring)', () => {
+  it('has proper Python syntax (shebang + docstring)', () => {
     const output = generatePython(defaultMeta, defaultSteps);
-    expect(output.startsWith('"""')).toBe(true);
+    expect(output.startsWith('#!/usr/bin/env python3')).toBe(true);
+    expect(output).toContain('"""');
   });
 });
 
