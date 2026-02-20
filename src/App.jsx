@@ -292,45 +292,54 @@ const AddStepMenu = ({ onAdd, onClose }) => {
 
 const CodeOutput = ({ format, metadata, steps }) => {
   const [copied, setCopied] = useState(false);
-  
+  const [showDownloadMsg, setShowDownloadMsg] = useState(false);
+
   const code = {
     yaml: () => generateYAML(metadata, steps),
     python: () => generatePython(metadata, steps),
     ecdl: () => generateECDL(metadata, steps),
     ir: () => generateIR(metadata, steps),
   }[format]();
-  
+
   const copyToClipboard = async () => {
     await navigator.clipboard.writeText(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-  
+
   const downloadFile = () => {
     const extensions = { yaml: 'ecproc', python: 'py', ecdl: 'ecdl.json', ir: 'ir.json' };
-    const mimeTypes = { yaml: 'text/yaml', python: 'text/x-python', ecdl: 'application/json', ir: 'application/json' };
-    
-    const blob = new Blob([code], { type: mimeTypes[format] });
+
+    // Use application/octet-stream to prevent macOS/Safari from auto-opening files
+    const blob = new Blob([code], { type: 'application/octet-stream' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `${metadata.name.toLowerCase().replace(/\s+/g, '_')}.${extensions[format]}`;
     a.click();
     URL.revokeObjectURL(url);
+
+    setShowDownloadMsg(true);
+    setTimeout(() => setShowDownloadMsg(false), 6000);
   };
 
-  const downloadHints = {
-    yaml: 'Open with any text editor (VS Code, TextEdit, Notepad)',
-    python: 'Requires ecproc SDK: pip install ecproc',
-    ecdl: null,
-    ir: null,
+  const downloadMessages = {
+    yaml: 'Saved! Right-click the file \u2192 Open With \u2192 VS Code or TextEdit',
+    python: 'Saved! Run from terminal: python3 filename.py (requires: pip install ecproc)',
+    ecdl: 'Saved!',
+    ir: 'Saved!',
   };
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <div className="flex items-center justify-end gap-2 px-3 py-2 border-b border-slate-700">
-        {downloadHints[format] && (
-          <span className="text-xs text-slate-500 mr-auto pl-1">{downloadHints[format]}</span>
+        {showDownloadMsg ? (
+          <span className="text-xs text-emerald-400 mr-auto pl-1">{downloadMessages[format]}</span>
+        ) : (
+          <span className="text-xs text-slate-500 mr-auto pl-1">
+            {format === 'yaml' && 'Do not double-click \u2014 open with a text editor'}
+            {format === 'python' && 'Run from terminal \u2014 requires: pip install ecproc'}
+          </span>
         )}
         <button
           onClick={copyToClipboard}
